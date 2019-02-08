@@ -6,6 +6,8 @@ import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
@@ -18,13 +20,18 @@ public class Robot extends TimedRobot {
 	VictorSPX ls = new VictorSPX(4);
 	Joystick _gamepad = new Joystick(0);
 
+	//TEMP TEMP
+	Victor windowMotor = new Victor(1);
+
 	//pnematics
 	Compressor compressor;
 	DoubleSolenoid hatchDisconnectSolenoid = new DoubleSolenoid(0, 1);
 
 	@Override
 	public void robotInit() {
-		/* Not used in this project */
+		windowMotor.enableDeadbandElimination(true);
+		windowMotor.set(100);
+		CameraServer.getInstance().startAutomaticCapture();
 	}
 	
 	@Override
@@ -53,10 +60,10 @@ public class Robot extends TimedRobot {
 		
 		
 		/* Configure output direction */
-		_leftMaster.setInverted(false);
-		ls.setInverted(false);
-		_rightMaster.setInverted(true);
-		rs.setInverted(true);
+		_leftMaster.setInverted(true);
+		ls.setInverted(true);
+		_rightMaster.setInverted(false);
+		rs.setInverted(false);
 		
 		System.out.println("This is Arcade Drive using Arbitrary Feed Forward.");
 	}
@@ -80,11 +87,29 @@ public class Robot extends TimedRobot {
 		boolean sideButtonPressed = false;
 		triggerPressed = _gamepad.getRawButton(1);
 		sideButtonPressed = _gamepad.getRawButton(2);
+		boolean compButton = _gamepad.getRawButton(3);
+		boolean button11 = _gamepad.getRawButton(11);
+		boolean button10 = _gamepad.getRawButton(10);
 
 		if(!(triggerPressed && sideButtonPressed)){
 			if(triggerPressed) hatchDisconnectSolenoid.set(DoubleSolenoid.Value.kForward);
 			else if(sideButtonPressed) hatchDisconnectSolenoid.set(DoubleSolenoid.Value.kReverse);
 		}
+		if(compButton){
+			compressor.setClosedLoopControl(true);
+		}else{
+			compressor.setClosedLoopControl(false);
+		}
+
+		if(button10){
+			windowMotor.set(1);
+		}else if(button11){
+			windowMotor.set(-1);
+		}else{
+			windowMotor.set(0);
+		}
+
+
 	}
 
 	/** Deadband 5 percent, used on the gamepad */
